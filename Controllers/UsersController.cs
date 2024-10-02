@@ -2,27 +2,21 @@ using ApiDevBP.Application.CreateUser;
 using ApiDevBP.Application.DeleteUser;
 using ApiDevBP.Application.GetUsers;
 using ApiDevBP.Application.UpdateUser;
-using ApiDevBP.Entities;
 using ApiDevBP.Models;
 using MediatR;
-
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
-using SQLite;
-using System.Reflection;
 
 namespace ApiDevBP.Controllers;
 
+/// <summary>
+/// 
+/// </summary>
 [ApiController]
 [Route("[controller]")]
 public class UsersController : ControllerBase
 {
 
-    public readonly SQLiteConnection _db;
-    public readonly ILogger<UsersController> _logger;
-
-    private ISender _sender;
-    protected ISender Sender => _sender ?? HttpContext.RequestServices.GetService<ISender>();
+    protected ISender Sender => HttpContext.RequestServices.GetService<ISender>();
 
     /// <summary>
     /// Creación de usuario
@@ -36,7 +30,14 @@ public class UsersController : ControllerBase
 
         var result = await Sender.Send(cmd);
 
-        return Ok(result > 0);
+        if (result > 0)
+        {
+            return Ok(result > 0);
+        }
+        else
+        {
+            return BadRequest();
+        }
     }
 
     /// <summary>

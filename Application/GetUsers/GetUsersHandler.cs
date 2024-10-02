@@ -5,13 +5,13 @@ using MediatR;
 
 namespace ApiDevBP.Application.GetUsers
 {
-    public class GetUsersHandler(IMapper mapper) : IRequestHandler<GetUsersQuery, List<UserModel>>
+    public class GetUsersHandler(IMapper mapper, IDbUsers dbUsers) : IRequestHandler<GetUsersQuery, List<UserModelUpdate>>
     {
-        public async Task<List<UserModel>> Handle(GetUsersQuery request, CancellationToken cancellationToken)
+        public async Task<List<UserModelUpdate>> Handle(GetUsersQuery request, CancellationToken cancellationToken)
         {
-            var dbusers = new DbUsers(mapper);
-            var result = await dbusers.GetAll();
 
+            var result = await dbUsers.GetAll();
+            
             return result;
         }
     }

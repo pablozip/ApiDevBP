@@ -4,25 +4,26 @@ using MediatR;
 
 namespace ApiDevBP.Application.UpdateUser;
 
-public class UpdateUserHandler(IMapper mapper) : IRequestHandler<UpdateUserCommand, bool>
+public class UpdateUserHandler(ILogger<UpdateUserHandler> logger, IMapper mapper, IDbUsers dbUsers) : IRequestHandler<UpdateUserCommand, bool>
 {
     private readonly IMapper _mapper = mapper;
 
     public async Task<bool> Handle(UpdateUserCommand request, CancellationToken cancellationToken)
     {
+        logger.LogInformation("Inicio UpdateUserHandler");
+
+        var result = false;
         try
         {
-            var dbusers = new DbUsers(mapper);
+            result = await dbUsers.Update(request);
 
-            var result = await dbusers.Update(request);
-
-            return result;
         }
         catch (Exception ex) 
-        { 
-            //grabar log
+        {
+            logger.LogError(ex, "Ha ocurrido un error al actualizar un usuario");
         }
 
-        return false;
+        logger.LogInformation("Fin UpdateUserHandler");
+        return result;
     }
 }

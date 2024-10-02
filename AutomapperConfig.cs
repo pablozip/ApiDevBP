@@ -14,5 +14,9 @@ public class AutomapperConfig : Profile
         CreateMap<UserModel, UserEntity>()
             .ForMember(m => m.Name, o => o.MapFrom(x => x.Name))
             .ForMember(m => m.Lastname, o => o.MapFrom(x => x.Lastname));
+        CreateMap<UserEntity, UserModel>()
+            .ForMember(m => m.Name, o => o.MapFrom(x => x.Name))
+            .ForMember(m => m.Lastname, o => o.MapFrom(x => x.Lastname));
+        CreateMap<UserEntity, UserModelUpdate>();
     }
 }

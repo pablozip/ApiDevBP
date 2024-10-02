@@ -4,17 +4,25 @@ using MediatR;
 
 namespace ApiDevBP.Application.DeleteUser;
 
-public class DeleteUserHandler(IMapper mapper) : IRequestHandler<DeleteUserCommand, bool>
+public class DeleteUserHandler(ILogger<DeleteUserHandler> logger, IMapper mapper, IDbUsers dbUsers) : IRequestHandler<DeleteUserCommand, bool>
 {
     private readonly IMapper _mapper = mapper;
 
     public async Task<bool> Handle(DeleteUserCommand request, CancellationToken cancellationToken)
     {
-        var dbusers = new DbUsers(_mapper);
+        var result = false;
+        try
+        {
+            logger.LogInformation("Inicio DeleteUserHandler");
 
-        var result = await dbusers.Delete(request.Id);
+            result = await dbUsers.Delete(request.Id);
+        }
+        catch (Exception ex) 
+        {
+            logger.LogError(ex, "Ha ocurrido un error al eliminar un usuario");
+        }
 
+        logger.LogInformation("Fin DeleteUserHandler");
         return result;
-
     }
 }

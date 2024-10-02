@@ -1,7 +1,9 @@
 using ApiDevBP;
+using ApiDevBP.Data;
 
 using Microsoft.OpenApi.Models;
 using Serilog;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -14,16 +16,15 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Host.UseSerilog();
-//builder.Host.UseSerilog((context, configuration) =>
-//    configuration.ReadFrom.Configuration(context.Configuration));
 
 builder.Services.AddAutoMapper(typeof(AutomapperConfig));
-//builder.Services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
 
 builder.Services.AddMediatR(cfg =>
 {
     cfg.RegisterServicesFromAssembly(System.Reflection.Assembly.GetExecutingAssembly());
 });
+
+builder.Services.AddScoped(typeof(IDbUsers), typeof(DbUsers));
 
 builder.Services.AddSwaggerGen(options =>
 {

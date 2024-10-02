@@ -1,28 +1,31 @@
 ﻿using ApiDevBP.Data;
-using ApiDevBP.Entities;
 using ApiDevBP.Models;
 
 using AutoMapper;
+
 using MediatR;
-using SQLite;
-using System.Reflection;
 
 namespace ApiDevBP.Application.CreateUser
 {
-    public class CreateUserHandler(IMapper mapper ) : IRequestHandler<CreateUserCommand, int>
+    public class CreateUserHandler(ILogger<CreateUserHandler> logger, IMapper mapper, IDbUsers dbUsers) : IRequestHandler<CreateUserCommand, int>
     {
         public async Task<int> Handle(CreateUserCommand request, CancellationToken cancellationToken)
         {
-            //throw new NotImplementedException();
-            //string localDb = Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "localDb");
-            //_db = new SQLiteConnection(localDb);
-            //_db.CreateTable<UserEntity>();
-            var dbusers = new DbUsers(mapper);
+            var result = 0;
+            try
+            {
+                logger.LogInformation("Entrando a Create");
 
-            
-            var user = mapper.Map<UserModel> (request);
+                var user = mapper.Map<UserModel>(request);
 
-            var result = await dbusers.Create(user);
+                result = await dbUsers.Create(user);
+                logger.LogInformation("Ejecución completada");
+
+            }
+            catch (Exception ex) 
+            {
+                logger.LogError(ex, "Ocurrió un error al crear el user");
+            }
 
             return result;
         }

@@ -2,19 +2,25 @@
 using ApiDevBP.Entities;
 using ApiDevBP.Models;
 using AutoMapper;
+using Microsoft.Extensions.Options;
 using SQLite;
 using System.Reflection;
 
 namespace ApiDevBP.Data
 {
-    public class DbUsers
+    /// <summary>
+    /// 
+    /// </summary>
+    public class DbUsers : IDbUsers, IDisposable
     {
         private readonly SQLiteConnection _db;
         private readonly IMapper _mapper;
+        private readonly DbConnection _dbConnection;
 
-        public DbUsers(IMapper mapper)
+        public DbUsers(IMapper mapper, IOptions<DbConnection> options)
         {
-            string localDb = Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "localDb");
+            _dbConnection = options.Value;
+            string localDb = Path.Combine(_dbConnection.path, _dbConnection.db);
             _db = new SQLiteConnection(localDb);
             _db.CreateTable<UserEntity>();
 
@@ -29,17 +35,11 @@ namespace ApiDevBP.Data
             return result;
         }
 
-        public async Task<List<UserModel>> GetAll()
+        public async Task<List<UserModelUpdate>> GetAll()
         {
             var users = _db.Query<UserEntity>($"Select * from Users").ToList();
 
-            //var result = _mapper.Map<List<UserModel>>(users);
-
-            var result = users.Select(x => new UserModel()
-            {
-                Name = x.Name,
-                Lastname = x.Lastname
-            }).ToList();
+            var result = _mapper.Map<List<UserModelUpdate>>(users);
 
             return result;
         }
@@ -61,6 +61,12 @@ namespace ApiDevBP.Data
             var result = _db.Update(entity);
 
             return result > 0;
+        }
+
+        public void Dispose()
+        {
+            _db.Close();
+            _db.Dispose();
         }
     }
 }
