@@ -1,8 +1,7 @@
-﻿namespace ApiDevBP.Models
+﻿namespace ApiDevBP.Models;
+
+public class UserModel
 {
-    public class UserModel
-    {
-        public string Name { get; set; }
-        public string Lastname { get; set; }
-    }
+    public string Name { get; set; }
+    public string Lastname { get; set; }
 }

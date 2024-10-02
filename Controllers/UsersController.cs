@@ -1,52 +1,86 @@
+using ApiDevBP.Application.CreateUser;
+using ApiDevBP.Application.DeleteUser;
+using ApiDevBP.Application.GetUsers;
+using ApiDevBP.Application.UpdateUser;
 using ApiDevBP.Entities;
 using ApiDevBP.Models;
+using MediatR;
+
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using SQLite;
 using System.Reflection;
 
-namespace ApiDevBP.Controllers
+namespace ApiDevBP.Controllers;
+
+[ApiController]
+[Route("[controller]")]
+public class UsersController : ControllerBase
 {
-    [ApiController]
-    [Route("[controller]")]
-    public class UsersController : ControllerBase
+
+    public readonly SQLiteConnection _db;
+    public readonly ILogger<UsersController> _logger;
+
+    private ISender _sender;
+    protected ISender Sender => _sender ?? HttpContext.RequestServices.GetService<ISender>();
+
+    /// <summary>
+    /// Creación de usuario
+    /// </summary>
+    /// <param name="user"></param>
+    /// <returns></returns>
+    [HttpPost]
+    public async Task<IActionResult> SaveUser(UserModel user)
     {
-        private readonly  SQLiteConnection _db;
-        
-        private readonly ILogger<UsersController> _logger;
+        var cmd = new CreateUserCommand(user);
 
-        public UsersController(ILogger<UsersController> logger)
-        {
-            _logger = logger;
-            string localDb = Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "localDb");
-            _db = new SQLiteConnection(localDb);
-            _db.CreateTable<UserEntity>();
-        }
+        var result = await Sender.Send(cmd);
 
-        [HttpPost]
-        public async Task<IActionResult> SaveUser(UserModel user)
-        {
-            var result = _db.Insert(new UserEntity()
-            {
-                Name = user.Name,
-                Lastname = user.Lastname
-            });
-            return Ok(result > 0);
-        }
+        return Ok(result > 0);
+    }
 
-        [HttpGet]
-        public async Task<IActionResult> GetUsers()
-        {
-            var users = _db.Query<UserEntity>($"Select * from Users");
-            if (users != null)
-            {
-                return Ok(users.Select(x=> new UserModel()
-                {
-                    Name = x.Name,
-                    Lastname = x.Lastname
-                }));
-            }
-            return NotFound();
-        }
+    /// <summary>
+    /// Obtención de todos los usuarios
+    /// </summary>
+    /// <returns></returns>
+    [HttpGet]
+    public async Task<IActionResult> GetUsers()
+    {
+        var qry = new GetUsersQuery();
 
+        var result = await Sender.Send(qry);
+
+        if (result.Count > 0)
+            return Ok(result);
+
+        return NotFound();
+    }
+
+    /// <summary>
+    /// Borrado de usuario en base a su Id
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    [HttpDelete]
+    public async Task<IActionResult> DeleteUser(int id)
+    {
+        var cmd = new DeleteUserCommand(id);
+        var result = await Sender.Send(cmd);
+
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Actualización de nombre y apellido
+    /// </summary>
+    /// <param name="user"></param>
+    /// <returns></returns>
+    [HttpPut]
+    public async Task<IActionResult> UpdateUser(UserModelUpdate user)
+    {
+        var cmd = new UpdateUserCommand(user);
+        var result = await Sender.Send(cmd);
+
+        return Ok(result);
     }
 }
