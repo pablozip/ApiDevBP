@@ -6,8 +6,6 @@ namespace ApiDevBP.Application.UpdateUser;
 
 public class UpdateUserHandler(ILogger<UpdateUserHandler> logger, IMapper mapper, IDbUsers dbUsers) : IRequestHandler<UpdateUserCommand, bool>
 {
-    private readonly IMapper _mapper = mapper;
-
     public async Task<bool> Handle(UpdateUserCommand request, CancellationToken cancellationToken)
     {
         logger.LogInformation("Inicio UpdateUserHandler");
@@ -16,7 +14,6 @@ public class UpdateUserHandler(ILogger<UpdateUserHandler> logger, IMapper mapper
         try
         {
             result = await dbUsers.Update(request);
-
         }
         catch (Exception ex) 
         {
